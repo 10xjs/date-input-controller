@@ -1,5 +1,5 @@
 {
-  "name": "@10xjs/form",
+  "name": "@10xjs/date-input-controller",
   "version": "0.1.0",
   "scripts": {
     "build": "npm run clean && npm run build:flow && npm run build:es && npm run build:lib",
@@ -27,7 +27,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/10xjs/form.git"
+    "url": "https://github.com/10xjs/date-input-controller.git"
   },
   "peerDependencies": {
     "react": ">=16.3.0"
