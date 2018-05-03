@@ -1,1 +1,1 @@
-export {default} from './DateInputFields';
+export {default} from './DateInputController';

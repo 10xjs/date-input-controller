@@ -29,7 +29,7 @@ import {
 
 const initValue = new Date(0);
 
-class DateInputFields extends React.PureComponent<Props, State> {
+class DateInputController extends React.PureComponent<Props, State> {
   static defaultProps = {
     min: undefined,
     max: undefined,
@@ -242,4 +242,4 @@ class DateInputFields extends React.PureComponent<Props, State> {
   }
 }
 
-export default DateInputFields;
+export default DateInputController;
