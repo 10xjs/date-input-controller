@@ -128,16 +128,24 @@ export const updateSecond = (value: number) => (state: State) => {
   const secondMax = getSecondMax(state);
   const second = Math.max(Math.min(value, secondMax), secondMin);
 
-  if (
-    second !== state.second.props.value ||
-    secondMin !== state.second.min ||
-    secondMax !== state.second.max
-  ) {
+  if (second !== state.second.props.value) {
     nextState = {
-      ...state,
+      ...nextState,
+      second: {
+        ...nextState.second,
+        props: {
+          ...nextState.second.props,
+          value: second,
+        },
+      },
+    };
+  }
+
+  if (secondMin !== state.second.min || secondMax !== state.second.max) {
+    nextState = {
+      ...nextState,
       second: {
         ...state.second,
-        value: second,
         min: secondMin,
         max: secondMax,
       },
@@ -186,16 +194,24 @@ export const updateMinute = (value: number) => (state: State) => {
   const minuteMax = getMinuteMax(state);
   const minute = Math.max(Math.min(value, minuteMax), minuteMin);
 
-  if (
-    minute !== state.minute.props.value ||
-    minuteMin !== state.minute.min ||
-    minuteMax !== state.minute.max
-  ) {
+  if (minute !== state.minute.props.value) {
     nextState = {
-      ...state,
+      ...nextState,
+      minute: {
+        ...nextState.minute,
+        props: {
+          ...nextState.minute.props,
+          value: minute,
+        },
+      },
+    };
+  }
+
+  if (minuteMin !== state.minute.min || minuteMax !== state.minute.max) {
+    nextState = {
+      ...nextState,
       minute: {
         ...state.minute,
-        value: minute,
         min: minuteMin,
         max: minuteMax,
       },
@@ -242,16 +258,24 @@ export const updateHour = (value: number) => (state: State) => {
   const hourMax = getHourMax(state);
   const hour = Math.max(Math.min(value, hourMax), hourMin);
 
-  if (
-    hour !== state.hour.props.value ||
-    hourMin !== state.hour.min ||
-    hourMax !== state.hour.max
-  ) {
+  if (hour !== state.hour.props.value) {
     nextState = {
-      ...state,
+      ...nextState,
+      hour: {
+        ...nextState.hour,
+        props: {
+          ...nextState.hour.props,
+          value: hour,
+        },
+      },
+    };
+  }
+
+  if (hourMin !== state.hour.min || hourMax !== state.hour.max) {
+    nextState = {
+      ...nextState,
       hour: {
         ...state.hour,
-        value: hour,
         min: hourMin,
         max: hourMax,
       },
@@ -296,16 +320,24 @@ export const updateDay = (value: number) => (state: State) => {
   const dayMax = getDayMax(state);
   const day = Math.max(Math.min(value, dayMax), dayMin);
 
-  if (
-    day !== state.day.props.value ||
-    dayMin !== state.day.min ||
-    dayMax !== state.day.max
-  ) {
+  if (day !== state.day.props.value) {
     nextState = {
-      ...state,
+      ...nextState,
+      day: {
+        ...nextState.day,
+        props: {
+          ...nextState.day.props,
+          value: day,
+        },
+      },
+    };
+  }
+
+  if (dayMin !== state.day.min || dayMax !== state.day.max) {
+    nextState = {
+      ...nextState,
       day: {
         ...state.day,
-        value: day,
         min: dayMin,
         max: dayMax,
       },
@@ -342,16 +374,24 @@ export const updateMonth = (value: number) => (state: State) => {
   const monthMax = getMonthMax(state);
   const month = Math.max(Math.min(value, monthMax), monthMin);
 
-  if (
-    month !== state.month.props.value ||
-    monthMin !== state.month.min ||
-    monthMax !== state.month.max
-  ) {
+  if (month !== state.month.props.value) {
     nextState = {
-      ...state,
+      ...nextState,
+      month: {
+        ...nextState.month,
+        props: {
+          ...nextState.month.props,
+          value: month,
+        },
+      },
+    };
+  }
+
+  if (monthMin !== state.month.min || monthMax !== state.month.max) {
+    nextState = {
+      ...nextState,
       month: {
         ...state.month,
-        value: month,
         min: monthMin,
         max: monthMax,
       },
@@ -397,16 +437,24 @@ export const updateYear = (value: number) => (state: State) => {
     year = Math.min(year, yearMax);
   }
 
-  if (
-    year !== state.year.props.value ||
-    yearMin !== state.year.min ||
-    yearMax !== state.year.max
-  ) {
+  if (year !== state.year.props.value) {
     nextState = {
-      ...state,
+      ...nextState,
+      year: {
+        ...nextState.year,
+        props: {
+          ...nextState.year.props,
+          value: year,
+        },
+      },
+    };
+  }
+
+  if (yearMin !== state.year.min || yearMax !== state.year.max) {
+    nextState = {
+      ...nextState,
       year: {
         ...state.year,
-        value: year,
         min: yearMin,
         max: yearMax,
       },
