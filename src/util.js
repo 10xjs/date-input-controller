@@ -462,14 +462,6 @@ export const createParseEvent = (
     }
 
     if (event.target instanceof HTMLElementClass) {
-      const type = event.target.type;
-
-      if (type === 'checkbox') {
-        return !!event.target.checked;
-      }
-
-      // TODO: Parse additional event types: file, multiple-select, etc.
-
       return event.target.value;
     }
 
@@ -478,18 +470,3 @@ export const createParseEvent = (
 };
 
 export const parseEvent = createParseEvent(Event, HTMLElement);
-
-export const lazyUpdate = <T: Object, U: $Shape<T>>(
-  state: T,
-  update: U,
-): U | null => {
-  for (const key in update) {
-    if (Object.prototype.hasOwnProperty.call(update, key)) {
-      if (state[key] !== update[key]) {
-        return update;
-      }
-    }
-  }
-
-  return null;
-};
