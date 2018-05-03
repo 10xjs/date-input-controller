@@ -145,7 +145,7 @@ export const updateSecond = (value: number) => (state: State) => {
     nextState = {
       ...nextState,
       second: {
-        ...state.second,
+        ...nextState.second,
         min: secondMin,
         max: secondMax,
       },
@@ -211,7 +211,7 @@ export const updateMinute = (value: number) => (state: State) => {
     nextState = {
       ...nextState,
       minute: {
-        ...state.minute,
+        ...nextState.minute,
         min: minuteMin,
         max: minuteMax,
       },
@@ -275,7 +275,7 @@ export const updateHour = (value: number) => (state: State) => {
     nextState = {
       ...nextState,
       hour: {
-        ...state.hour,
+        ...nextState.hour,
         min: hourMin,
         max: hourMax,
       },
@@ -337,7 +337,7 @@ export const updateDay = (value: number) => (state: State) => {
     nextState = {
       ...nextState,
       day: {
-        ...state.day,
+        ...nextState.day,
         min: dayMin,
         max: dayMax,
       },
@@ -391,7 +391,7 @@ export const updateMonth = (value: number) => (state: State) => {
     nextState = {
       ...nextState,
       month: {
-        ...state.month,
+        ...nextState.month,
         min: monthMin,
         max: monthMax,
       },
@@ -454,7 +454,7 @@ export const updateYear = (value: number) => (state: State) => {
     nextState = {
       ...nextState,
       year: {
-        ...state.year,
+        ...nextState.year,
         min: yearMin,
         max: yearMax,
       },
