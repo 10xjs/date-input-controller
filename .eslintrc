@@ -1,0 +1,13 @@
+extends:
+  - metalab
+  - metalab/react
+rules:
+  complexity: 0
+overrides:
+  -
+    files: "*.test.js"
+    env:
+      jest: true
+globals:
+  __DEV__: false
+  module: false
