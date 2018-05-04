@@ -296,7 +296,7 @@ export const getDayMin = (state: State): number => {
     return getDay(min, state.utc);
   }
 
-  return 0;
+  return 1;
 };
 
 export const getDayMax = (state: State): number => {
