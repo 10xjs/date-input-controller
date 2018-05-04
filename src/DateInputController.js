@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type {Props, State, FieldName, ValueUpdater} from './types';
+import type {Props, State, FieldName} from './types';
 
 import {
   isInt,
@@ -25,7 +25,11 @@ import {
   parseEvent,
 } from './util';
 
-// eslint-disable-next-line no-bitwise
+const assertIntValue = (value: mixed, name: string) => {
+  if (!isInt(value)) {
+    throw new Error(`expected integer ${name}`);
+  }
+};
 
 const initValue = new Date(0);
 
@@ -81,22 +85,12 @@ class DateInputController extends React.PureComponent<Props, State> {
     return nextState;
   }
 
-  _handleChange = (
-    eventOrValue: mixed,
-    key: FieldName,
-    updater: ValueUpdater,
-  ) => {
-    const value = Number(parseEvent(eventOrValue));
-
-    if (!isInt(value)) {
-      throw new Error(`expected numeric ${key}`);
-    }
-
+  _updateState = (updater: (State) => State, callback?: (boolean) => mixed) => {
     let updated = false;
 
     this.setState(
       (state) => {
-        const nextState = updater(state, value);
+        const nextState = updater(state);
 
         if (nextState === state) {
           return null;
@@ -104,15 +98,125 @@ class DateInputController extends React.PureComponent<Props, State> {
 
         updated = true;
 
-        const nextValue = dateValue(nextState);
+        const nextDateValue = dateValue(nextState);
 
-        if (!areEqualDates(nextValue, state.value)) {
-          nextState.value = nextValue;
+        if (!areEqualDates(nextDateValue, state.value)) {
+          nextState.value = nextDateValue;
         }
 
         return nextState;
       },
       () => {
+        if (callback) {
+          callback(updated);
+        }
+      },
+    );
+  };
+
+  _setFieldValue = (key: FieldName, updater: (number) => (State) => State) => (
+    value: number,
+  ) => {
+    assertIntValue(value, key);
+
+    this._updateState(updater(value), (updated) => {
+      if (this.props.onChange && updated) {
+        this.props.onChange(this.state.value);
+      }
+    });
+  };
+
+  setYear = this._setFieldValue('year', (value) => (state) =>
+    flow(
+      updateYear(value),
+      updateMonth(state.month.props.value),
+      updateDay(state.day.props.value),
+      updateHour(state.hour.props.value),
+      updateMinute(state.minute.props.value),
+      updateSecond(state.second.props.value),
+    )(state),
+  );
+
+  setMonth = this._setFieldValue('month', (value) => (state) =>
+    flow(
+      updateMonth(value),
+      updateDay(state.day.props.value),
+      updateHour(state.hour.props.value),
+      updateMinute(state.minute.props.value),
+      updateSecond(state.second.props.value),
+    )(state),
+  );
+
+  setDay = this._setFieldValue('day', (value) => (state) =>
+    flow(
+      updateDay(value),
+      updateHour(state.hour.props.value),
+      updateMinute(state.minute.props.value),
+      updateSecond(state.second.props.value),
+    )(state),
+  );
+
+  setHour = this._setFieldValue('hour', (value) => (state) =>
+    flow(
+      updateHour(value),
+      updateMinute(state.minute.props.value),
+      updateSecond(state.second.props.value),
+    )(state),
+  );
+
+  setMinute = this._setFieldValue('minute', (value) => (state) =>
+    flow(updateMinute(value), updateSecond(state.second.props.value))(state),
+  );
+
+  setSecond = this._setFieldValue('second', updateSecond);
+
+  setFields = (fields: {
+    year?: number,
+    month?: number,
+    day?: number,
+    hour?: number,
+    minute?: number,
+    second?: number,
+  }) => {
+    fields.year !== undefined && assertIntValue(fields.year, 'year');
+    fields.month !== undefined && assertIntValue(fields.month, 'month');
+    fields.day !== undefined && assertIntValue(fields.day, 'day');
+    fields.hour !== undefined && assertIntValue(fields.hour, 'hour');
+    fields.minute !== undefined && assertIntValue(fields.minute, 'minute');
+    fields.second !== undefined && assertIntValue(fields.second, 'second');
+
+    this._updateState(
+      (state) => {
+        if (
+          fields.year === state.year.props.value &&
+          fields.month === state.month.props.value &&
+          fields.day === state.day.props.value &&
+          fields.hour === state.hour.props.value &&
+          fields.minute === state.minute.props.value &&
+          fields.second === state.second.props.value
+        ) {
+          return state;
+        }
+
+        const {
+          year = state.year.props.value,
+          month = state.month.props.value,
+          day = state.day.props.value,
+          hour = state.hour.props.value,
+          minute = state.minute.props.value,
+          second = state.second.props.value,
+        } = fields;
+
+        return flow(
+          updateYear(year),
+          updateMonth(month),
+          updateDay(day),
+          updateHour(hour),
+          updateMinute(minute),
+          updateSecond(second),
+        )(state);
+      },
+      (updated) => {
         if (this.props.onChange && updated) {
           this.props.onChange(this.state.value);
         }
@@ -120,68 +224,24 @@ class DateInputController extends React.PureComponent<Props, State> {
     );
   };
 
-  _handleChangeYear = (eventOrValue: mixed) =>
-    this._handleChange(eventOrValue, 'year', (state, value) =>
-      flow(
-        updateYear(value),
-        updateMonth(state.month.props.value),
-        updateDay(state.day.props.value),
-        updateHour(state.hour.props.value),
-        updateMinute(state.minute.props.value),
-        updateSecond(state.second.props.value),
-      )(state),
-    );
-
-  _handleChangeMonth = (eventOrValue: mixed) =>
-    this._handleChange(eventOrValue, 'month', (state, value) =>
-      flow(
-        updateMonth(value),
-        updateDay(state.day.props.value),
-        updateHour(state.hour.props.value),
-        updateMinute(state.minute.props.value),
-        updateSecond(state.second.props.value),
-      )(state),
-    );
-
-  _handleChangeDay = (eventOrValue: mixed) =>
-    this._handleChange(eventOrValue, 'day', (state, value) =>
-      flow(
-        updateDay(value),
-        updateHour(state.hour.props.value),
-        updateMinute(state.minute.props.value),
-        updateSecond(state.second.props.value),
-      )(state),
-    );
-
-  _handleChangeHour = (eventOrValue: mixed) =>
-    this._handleChange(eventOrValue, 'hour', (state, value) =>
-      flow(
-        updateHour(value),
-        updateMinute(state.minute.props.value),
-        updateSecond(state.second.props.value),
-      )(state),
-    );
-
-  _handleChangeMinute = (eventOrValue: mixed) =>
-    this._handleChange(eventOrValue, 'minute', (state, value) =>
-      flow(updateMinute(value), updateSecond(state.second.props.value))(state),
-    );
-
-  _handleChangeSecond = (eventOrValue: mixed) =>
-    this._handleChange(eventOrValue, 'second', (state, value) =>
-      updateSecond(value)(state),
-    );
-
   state = {
     value: initValue,
     min: this.props.min,
     max: this.props.max,
     utc: this.props.utc,
 
+    setYear: this.setYear,
+    setMonth: this.setMonth,
+    setDay: this.setDay,
+    setHour: this.setHour,
+    setMinute: this.setMinute,
+    setSecond: this.setSecond,
+    setFields: this.setFields,
+
     year: {
       props: {
         value: getYear(initValue, this.props.utc),
-        onChange: this._handleChangeYear,
+        onChange: (event: mixed) => this.setYear(Number(parseEvent(event))),
       },
       min: null,
       max: null,
@@ -190,7 +250,7 @@ class DateInputController extends React.PureComponent<Props, State> {
     month: {
       props: {
         value: getMonth(initValue, this.props.utc),
-        onChange: this._handleChangeMonth,
+        onChange: (event: mixed) => this.setMonth(Number(parseEvent(event))),
       },
       min: 0,
       max: 11,
@@ -199,7 +259,7 @@ class DateInputController extends React.PureComponent<Props, State> {
     day: {
       props: {
         value: getDay(initValue, this.props.utc),
-        onChange: this._handleChangeDay,
+        onChange: (event: mixed) => this.setDay(Number(parseEvent(event))),
       },
       min: 0,
       max: daysInMonth(
@@ -211,7 +271,7 @@ class DateInputController extends React.PureComponent<Props, State> {
     hour: {
       props: {
         value: getHour(initValue, this.props.utc),
-        onChange: this._handleChangeHour,
+        onChange: (event: mixed) => this.setHour(Number(parseEvent(event))),
       },
       min: 0,
       max: 23,
@@ -220,7 +280,7 @@ class DateInputController extends React.PureComponent<Props, State> {
     minute: {
       props: {
         value: getMinute(initValue, this.props.utc),
-        onChange: this._handleChangeMinute,
+        onChange: (event: mixed) => this.setMinute(Number(parseEvent(event))),
       },
       min: 0,
       max: 59,
@@ -229,7 +289,7 @@ class DateInputController extends React.PureComponent<Props, State> {
     second: {
       props: {
         value: getSecond(initValue, this.props.utc),
-        onChange: this._handleChangeSecond,
+        onChange: (event: mixed) => this.setSecond(Number(parseEvent(event))),
       },
       min: 0,
       max: 59,

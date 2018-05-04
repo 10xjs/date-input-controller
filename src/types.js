@@ -44,5 +44,3 @@ export type Props = {
   onChange: (Date) => mixed,
   children(State): React.Node,
 };
-
-export type ValueUpdater = (State, number) => State;
