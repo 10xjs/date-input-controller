@@ -1,9 +1,9 @@
 # @10xjs/date-input-controller
 
-#### A helper component for creating datetime inputs in React.
+> A helper component for creating datetime inputs in React.
 
-![build status](http://img.shields.io/travis/10xjs/date-input-controller/master.svg?style=flat)
-![coverage](http://img.shields.io/coveralls/10xjs/date-input-controller/master.svg?style=flat)
+[![Build Status](https://travis-ci.org/10xjs/date-input-controller.svg?branch=master)](https://travis-ci.org/10xjs/date-input-controller)
+[![Coverage Status](https://coveralls.io/repos/github/10xjs/date-input-controller/badge.svg?branch=master)](https://coveralls.io/github/10xjs/date-input-controller?branch=master)
 
 ```jsx
 import DateInputController from '@10xjs/date-input-controller';
