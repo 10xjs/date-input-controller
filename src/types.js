@@ -2,45 +2,61 @@
 
 import * as React from 'react';
 
-type FieldState = {
+export type FieldState<T> = {
   props: {
     value: number,
     onChange(mixed): void,
   },
-  min: number,
-  max: number,
+  min: T,
+  max: T,
 };
 
-type Fields = {
-  year: {
-    props: {
-      value: number,
-      onChange(mixed): void,
-    },
-    min: number | null,
-    max: number | null,
-  },
-  month: FieldState,
-  day: FieldState,
-  hour: FieldState,
-  minute: FieldState,
-  second: FieldState,
+export type Fields = {
+  year: FieldState<number | null>,
+  month: FieldState<number>,
+  day: FieldState<number>,
+  hour: FieldState<number>,
+  minute: FieldState<number>,
+  second: FieldState<number>,
 };
 
-export type FieldName = $Keys<Fields>;
-
-export type State = {
+export type FieldsState = {
   value: Date,
   min?: Date,
   max?: Date,
   utc: boolean,
-} & Fields;
+  ...$Exact<Fields>,
+};
+
+export type FieldActions = {
+  setYear(year: number): void,
+  setMonth(month: number): void,
+  setDay(day: number): void,
+  setHour(hour: number): void,
+  setMinute(minute: number): void,
+  setSecond(second: number): void,
+};
+
+export type State = {
+  ...$Exact<FieldsState>,
+
+  setFields(fields: {
+    year?: number,
+    month?: number,
+    day?: number,
+    hour?: number,
+    minute?: number,
+    second?: number,
+  }): void,
+
+  ...$Exact<FieldActions>,
+};
 
 export type Props = {
   value: Date,
-  min: Date,
-  max: Date,
+  min?: Date,
+  max?: Date,
   utc: boolean,
-  onChange: (Date) => mixed,
+  onChange?: (Date) => mixed,
   children(State): React.Node,
 };

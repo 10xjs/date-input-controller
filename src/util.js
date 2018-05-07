@@ -1,16 +1,11 @@
 // @flow strict
 
-// flowlint unclear-type:off
-
-import type {State} from './types';
+import type {State, Fields, FieldActions} from './types';
+import type DateInputController from './DateInputController';
 
 export const isInt = (val: mixed): boolean %checks => {
   return typeof val === 'number' && val === (val | 0);
 };
-
-export const flow: $ComposeReverse = ((...functions) => (value) => {
-  return functions.reduce((intermediate, next) => next(intermediate), value);
-}: any);
 
 export const daysInMonth = (year: number, month: number): number => {
   // Create a date object at the last day of the selected month by using
@@ -20,451 +15,148 @@ export const daysInMonth = (year: number, month: number): number => {
 };
 
 // Check it two values represent equal dates at second precision.
+// This comparison ROUNDS DOWN TO THE PREVIOUS SECOND.
 export const areEqualDates = (a: ?Date, b: ?Date): boolean => {
-  if (a && b && a instanceof Date && b instanceof Date) {
-    return ((a.getTime() / 1000) | 0) === ((b.getTime() / 1000) | 0);
-  }
-
-  return true;
+  return (
+    a === b ||
+    (a instanceof Date &&
+      b instanceof Date &&
+      ((a.getTime() / 1000) | 0) === ((b.getTime() / 1000) | 0))
+  );
 };
 
-export const getYear = (date: Date, utc: boolean = false): number => {
-  if (utc) {
-    return date.getUTCFullYear();
-  }
-  return date.getFullYear();
-};
+export const getDateField = [
+  (date: Date, utc: boolean): number =>
+    utc ? date.getUTCFullYear() : date.getFullYear(),
+  (date: Date, utc: boolean): number =>
+    utc ? date.getUTCMonth() : date.getMonth(),
+  (date: Date, utc: boolean): number =>
+    utc ? date.getUTCDate() : date.getDate(),
+  (date: Date, utc: boolean): number =>
+    utc ? date.getUTCHours() : date.getHours(),
+  (date: Date, utc: boolean): number =>
+    utc ? date.getUTCMinutes() : date.getMinutes(),
+  (date: Date, utc: boolean): number =>
+    utc ? date.getUTCSeconds() : date.getSeconds(),
+];
 
-export const getMonth = (date: Date, utc: boolean = false): number => {
-  if (utc) {
-    return date.getUTCMonth();
-  }
-  return date.getMonth();
-};
+export const fieldKeys = ['year', 'month', 'day', 'hour', 'minute', 'second'];
 
-export const getDay = (date: Date, utc: boolean = false): number => {
-  if (utc) {
-    return date.getUTCDate();
-  }
-  return date.getDate();
-};
+export const getValue = (state: Fields, index: number): number =>
+  state[fieldKeys[index]].props.value;
 
-export const getHour = (date: Date, utc: boolean = false): number => {
-  if (utc) {
-    return date.getUTCHours();
-  }
-  return date.getHours();
+const setField = (state: State, index: number, update): State => {
+  const key = fieldKeys[index];
+  const result = Object.assign({}, state);
+  // $ExpectError Flow doesn't understand that state[key] === state[key]
+  result[key] = (Object.assign({}, state[key], update): any);
+  return result;
 };
-
-export const getMinute = (date: Date, utc: boolean = false): number => {
-  if (utc) {
-    return date.getUTCMinutes();
-  }
-  return date.getMinutes();
-};
-
-export const getSecond = (date: Date, utc: boolean = false): number => {
-  if (utc) {
-    return date.getUTCSeconds();
-  }
-  return date.getSeconds();
+const setValue = (state: State, index: number, value): State => {
+  const key = fieldKeys[index];
+  return setField(state, index, {
+    props: Object.assign({}, state[key].props, {
+      value,
+    }),
+  });
 };
 
 export const dateValue = (state: State): Date => {
-  const args = [
-    state.year.props.value,
-    state.month.props.value,
-    state.day.props.value,
-    state.hour.props.value,
-    state.minute.props.value,
-    state.second.props.value,
-  ];
-
+  const args = fieldKeys.map((_, i) => getValue(state, i));
   if (state.utc) {
-    return new Date(Date.UTC(...args));
+    return new Date(Date.UTC.apply(null, args));
   }
-
-  return new Date(...args);
+  // $ExpectError Flow doesn't like us touching Date.bind
+  return new (Date.bind.apply(Date, [null].concat(args)))();
 };
 
-export const getSecondMin = (state: State): number => {
-  const min = state.min;
+// Min Max Calc
+const atMin = (state: State, index: number) => {
+  if (index < 0) {
+    return true;
+  }
 
-  if (
+  const min = state.min;
+  return (
     min &&
-    state.year.props.value === getYear(min, state.utc) &&
-    state.month.props.value === getMonth(min, state.utc) &&
-    state.day.props.value === getDay(min, state.utc) &&
-    state.hour.props.value === getHour(min, state.utc) &&
-    state.minute.props.value === getMinute(min, state.utc)
-  ) {
-    return getSecond(min, state.utc);
-  }
-
-  return 0;
+    ((index === 0 ? true : atMin(state, index - 1)) &&
+      getDateField[index](min, state.utc) >= getValue(state, index))
+  );
 };
 
-export const getSecondMax = (state: State): number => {
-  const max = state.max;
+const atMax = (state: State, index: number) => {
+  if (index < 0) {
+    return true;
+  }
 
-  if (
+  const max = state.max;
+  return (
     max &&
-    state.year.props.value === getYear(max, state.utc) &&
-    state.month.props.value === getMonth(max, state.utc) &&
-    state.day.props.value === getDay(max, state.utc) &&
-    state.hour.props.value === getHour(max, state.utc) &&
-    state.minute.props.value === getMinute(max, state.utc)
-  ) {
-    return getSecond(max, state.utc);
-  }
-
-  return 59;
+    ((index === 0 ? true : atMax(state, index - 1)) &&
+      getDateField[index](max, state.utc) <= getValue(state, index))
+  );
 };
 
-export const updateSecond = (value: number) => (state: State) => {
-  let nextState = state;
+export const defaultMin = [null, 0, 1, 0, 0, 0];
+export const defaultMax = [null, 11, null, 23, 59, 59];
 
-  const secondMin = getSecondMin(state);
-  const secondMax = getSecondMax(state);
-  const second = Math.max(Math.min(value, secondMax), secondMin);
-
-  if (second !== state.second.props.value) {
-    nextState = {
-      ...nextState,
-      second: {
-        ...nextState.second,
-        props: {
-          ...nextState.second.props,
-          value: second,
-        },
-      },
-    };
-  }
-
-  if (secondMin !== state.second.min || secondMax !== state.second.max) {
-    nextState = {
-      ...nextState,
-      second: {
-        ...nextState.second,
-        min: secondMin,
-        max: secondMax,
-      },
-    };
-  }
-
-  return nextState;
+const resolveDefaultMax = (state: State, index: number) => {
+  return index === 2
+    ? daysInMonth(getValue(state, 0), getValue(state, 1))
+    : defaultMax[index];
 };
 
-export const getMinuteMin = (state: State): number => {
+export const getMin = (state: State, index: number) => {
   const min = state.min;
-
-  if (
-    min &&
-    state.year.props.value === getYear(min, state.utc) &&
-    state.month.props.value === getMonth(min, state.utc) &&
-    state.day.props.value === getDay(min, state.utc) &&
-    state.hour.props.value === getHour(min, state.utc)
-  ) {
-    return getMinute(min, state.utc);
-  }
-
-  return 0;
+  // If min date is defined and the next-largest field is at its min value...
+  return min && atMin(state, index - 1)
+    ? // return the value of the min date at the current field...
+      getDateField[index](min, state.utc)
+    : // or return a default min value for the field.
+      defaultMin[index];
 };
 
-export const getMinuteMax = (state: State): number => {
+export const getMax = (state: State, index: number) => {
   const max = state.max;
-
-  if (
-    max &&
-    state.year.props.value === getYear(max, state.utc) &&
-    state.month.props.value === getMonth(max, state.utc) &&
-    state.day.props.value === getDay(max, state.utc) &&
-    state.hour.props.value === getHour(max, state.utc)
-  ) {
-    return getMinute(max, state.utc);
-  }
-
-  return 59;
+  // If max date is defined and the next-largest field is at its max value...
+  return max && atMax(state, index - 1)
+    ? // return the value of the max date at the current field...
+      getDateField[index](max, state.utc)
+    : // or return a default max value for the field.
+      resolveDefaultMax(state, index);
 };
 
-export const updateMinute = (value: number) => (state: State) => {
+export const updateField = (index: number, value: number) => (
+  state: State,
+): State => {
+  const key = fieldKeys[index];
   let nextState = state;
 
-  const minuteMin = getMinuteMin(state);
-  const minuteMax = getMinuteMax(state);
-  const minute = Math.max(Math.min(value, minuteMax), minuteMin);
+  const min = getMin(state, index);
+  const max = getMax(state, index);
 
-  if (minute !== state.minute.props.value) {
-    nextState = {
-      ...nextState,
-      minute: {
-        ...nextState.minute,
-        props: {
-          ...nextState.minute.props,
-          value: minute,
-        },
-      },
-    };
+  let nextValue = value;
+
+  if (min !== null && nextValue < min) {
+    nextValue = min;
+  } else if (max !== null && nextValue > max) {
+    nextValue = max;
   }
 
-  if (minuteMin !== state.minute.min || minuteMax !== state.minute.max) {
-    nextState = {
-      ...nextState,
-      minute: {
-        ...nextState.minute,
-        min: minuteMin,
-        max: minuteMax,
-      },
-    };
+  // console.log('getValue', key, state);
+
+  if (nextValue !== getValue(state, index)) {
+    nextState = setValue(nextState, index, nextValue);
+  }
+
+  if (min !== state[key].min || max !== state[key].max) {
+    nextState = setField(nextState, index, {min, max});
   }
 
   return nextState;
 };
 
-export const getHourMin = (state: State): number => {
-  const min = state.min;
-
-  if (
-    min &&
-    state.year.props.value === getYear(min, state.utc) &&
-    state.month.props.value === getMonth(min, state.utc) &&
-    state.day.props.value === getDay(min, state.utc)
-  ) {
-    return getHour(min, state.utc);
-  }
-
-  return 0;
-};
-
-export const getHourMax = (state: State): number => {
-  const max = state.max;
-
-  if (
-    max &&
-    state.year.props.value === getYear(max, state.utc) &&
-    state.month.props.value === getMonth(max, state.utc) &&
-    state.day.props.value === getDay(max, state.utc)
-  ) {
-    return getHour(max, state.utc);
-  }
-
-  return 23;
-};
-
-export const updateHour = (value: number) => (state: State) => {
-  let nextState = state;
-
-  const hourMin = getHourMin(state);
-  const hourMax = getHourMax(state);
-  const hour = Math.max(Math.min(value, hourMax), hourMin);
-
-  if (hour !== state.hour.props.value) {
-    nextState = {
-      ...nextState,
-      hour: {
-        ...nextState.hour,
-        props: {
-          ...nextState.hour.props,
-          value: hour,
-        },
-      },
-    };
-  }
-
-  if (hourMin !== state.hour.min || hourMax !== state.hour.max) {
-    nextState = {
-      ...nextState,
-      hour: {
-        ...nextState.hour,
-        min: hourMin,
-        max: hourMax,
-      },
-    };
-  }
-
-  return nextState;
-};
-
-export const getDayMin = (state: State): number => {
-  const min = state.min;
-
-  if (
-    min &&
-    state.year.props.value === getYear(min, state.utc) &&
-    state.month.props.value === getMonth(min, state.utc)
-  ) {
-    return getDay(min, state.utc);
-  }
-
-  return 1;
-};
-
-export const getDayMax = (state: State): number => {
-  const max = state.max;
-
-  if (
-    max &&
-    state.year.props.value === getYear(max, state.utc) &&
-    state.month.props.value === getMonth(max, state.utc)
-  ) {
-    return getDay(max, state.utc);
-  }
-
-  return daysInMonth(state.year.props.value, state.month.props.value);
-};
-
-export const updateDay = (value: number) => (state: State) => {
-  let nextState = state;
-
-  const dayMin = getDayMin(state);
-  const dayMax = getDayMax(state);
-  const day = Math.max(Math.min(value, dayMax), dayMin);
-
-  if (day !== state.day.props.value) {
-    nextState = {
-      ...nextState,
-      day: {
-        ...nextState.day,
-        props: {
-          ...nextState.day.props,
-          value: day,
-        },
-      },
-    };
-  }
-
-  if (dayMin !== state.day.min || dayMax !== state.day.max) {
-    nextState = {
-      ...nextState,
-      day: {
-        ...nextState.day,
-        min: dayMin,
-        max: dayMax,
-      },
-    };
-  }
-
-  return nextState;
-};
-
-export const getMonthMin = (state: State): number => {
-  const min = state.min;
-
-  if (min && state.year.props.value === getYear(min, state.utc)) {
-    return getMonth(min, state.utc);
-  }
-
-  return 0;
-};
-
-export const getMonthMax = (state: State): number => {
-  const max = state.max;
-
-  if (max && state.year.props.value === getYear(max, state.utc)) {
-    return getMonth(max, state.utc);
-  }
-
-  return 11;
-};
-
-export const updateMonth = (value: number) => (state: State) => {
-  let nextState = state;
-
-  const monthMin = getMonthMin(state);
-  const monthMax = getMonthMax(state);
-  const month = Math.max(Math.min(value, monthMax), monthMin);
-
-  if (month !== state.month.props.value) {
-    nextState = {
-      ...nextState,
-      month: {
-        ...nextState.month,
-        props: {
-          ...nextState.month.props,
-          value: month,
-        },
-      },
-    };
-  }
-
-  if (monthMin !== state.month.min || monthMax !== state.month.max) {
-    nextState = {
-      ...nextState,
-      month: {
-        ...nextState.month,
-        min: monthMin,
-        max: monthMax,
-      },
-    };
-  }
-
-  return nextState;
-};
-
-export const getYearMin = (state: State): number | null => {
-  const min = state.min;
-
-  if (min) {
-    return getYear(min, state.utc);
-  }
-
-  return null;
-};
-
-export const getYearMax = (state: State): number | null => {
-  const max = state.max;
-
-  if (max) {
-    return getYear(max, state.utc);
-  }
-
-  return null;
-};
-
-export const updateYear = (value: number) => (state: State) => {
-  let nextState = state;
-
-  const yearMin = getYearMin(state);
-  const yearMax = getYearMax(state);
-
-  let year = value;
-
-  if (yearMin !== null) {
-    year = Math.max(year, yearMin);
-  }
-
-  if (yearMax !== null) {
-    year = Math.min(year, yearMax);
-  }
-
-  if (year !== state.year.props.value) {
-    nextState = {
-      ...nextState,
-      year: {
-        ...nextState.year,
-        props: {
-          ...nextState.year.props,
-          value: year,
-        },
-      },
-    };
-  }
-
-  if (yearMin !== state.year.min || yearMax !== state.year.max) {
-    nextState = {
-      ...nextState,
-      year: {
-        ...nextState.year,
-        min: yearMin,
-        max: yearMax,
-      },
-    };
-  }
-
-  return nextState;
-};
-
-export const createIsEvent = (EventClass: Function) => (
+export const createIsEvent = (EventClass: Class<mixed>) => (
   _event: mixed,
 ): boolean => {
   if (_event instanceof EventClass) {
@@ -484,21 +176,18 @@ export const createIsEvent = (EventClass: Function) => (
   return false;
 };
 
-export const isEvent = createIsEvent(Event);
-
-export const createCastEvent = (EventClass: Function) => {
+export const createCastEvent = (EventClass: Class<mixed>) => {
   const isEvent = createIsEvent(EventClass);
 
-  return <T>(event: mixed): Event | SyntheticEvent<T> | null => {
-    return isEvent(event) ? (event: any) : null;
+  return <T>(event: mixed) => {
+    // $ExpectError Cast our duck-typed event through any
+    return isEvent(event) ? ((event: any): Event | SyntheticEvent<T>) : null;
   };
 };
 
-export const castEvent = createCastEvent(Event);
-
 export const createParseEvent = (
-  EventClass: Function,
-  HTMLElementClass: Function,
+  EventClass: Class<mixed>,
+  HTMLElementClass: Class<mixed>,
 ) => {
   const castEvent = createCastEvent(EventClass);
 
@@ -517,4 +206,52 @@ export const createParseEvent = (
   };
 };
 
-export const parseEvent = createParseEvent(Event, HTMLElement);
+export const createGetInitialState = (
+  Event: Class<mixed>,
+  HTMLElement: Class<mixed>,
+) => {
+  const parseEvent = createParseEvent(Event, HTMLElement);
+
+  return (
+    target: DateInputController,
+  ): {state: State, actions: FieldActions} => {
+    const updaters = [];
+
+    const actions: $Shape<FieldActions> = {};
+    let state: $Shape<State> = {
+      value:
+        target.props.value === undefined ? new Date(0) : target.props.value,
+      min: target.props.min,
+      max: target.props.max,
+      utc: target.props.utc,
+    };
+
+    fieldKeys.forEach((field, i) => {
+      updaters.push(updateField(i, getDateField[i](state.value, state.utc)));
+
+      const setter = (value) => {
+        const fields = {};
+        fields[field] = value;
+        target.setFields(fields);
+      };
+
+      actions[`set${field.charAt(0).toUpperCase()}${field.slice(1)}`] = setter;
+
+      // $ExpectError min and max values will be populated in update loop
+      state[field] = {
+        props: {
+          onChange: (event: mixed) => setter(Number(parseEvent(event))),
+        },
+      };
+    });
+
+    Object.assign(state, actions);
+
+    state = updaters.reduce((state, updater) => updater(state), state);
+    state.value = dateValue(state);
+
+    return {state, actions};
+  };
+};
+
+export const getInitialState = createGetInitialState(Event, HTMLElement);
