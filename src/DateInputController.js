@@ -5,12 +5,10 @@ import * as React from 'react';
 import type {Props, State} from './types';
 
 import {
-  isInt,
   areEqualDates,
   getDateField,
   dateValue,
   fieldKeys,
-  getValue,
   getInitialState,
   updateField,
 } from './util';
@@ -65,12 +63,15 @@ class DateInputController extends React.PureComponent<Props, State> {
         const value = fields[key];
 
         if (value !== undefined) {
-          if (!isInt(value)) {
+          if (typeof value === 'number' && (value | 0) === value) {
+            updaters.push(updateField(i, value));
+          } else if (typeof value === 'string' && /^[0-9]+$/.test(value)) {
+            updaters.push(updateField(i, parseInt(value, 10)));
+          } else {
             throw new TypeError(`Expected int ${key}. Received ${value}.`);
           }
-          updaters.push(updateField(i, value));
         } else if (updaters.length) {
-          updaters.push(updateField(i, getValue(state, i)));
+          updaters.push(updateField(i, state[fieldKeys[i]]));
         }
       }
 

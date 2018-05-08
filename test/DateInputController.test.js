@@ -101,9 +101,9 @@ describe('<DateInputController/>', () => {
 
         const {value, day, second, ...rest} = state;
 
-        expect(day).toMatchObject({props: {value: nextDate.getDate()}});
+        expect(day).toEqual(nextDate.getDate());
 
-        expect(second).toMatchObject({props: {value: nextDate.getSeconds()}});
+        expect(second).toEqual(nextDate.getSeconds());
 
         // it should update state date instance
         expect(value.getTime()).toBe(nextDate.getTime());
@@ -132,16 +132,15 @@ describe('<DateInputController/>', () => {
           // $ExpectError cast nullable state as any
         ): any);
 
-        const {value, min, hour, ...rest} = state;
+        const {value, min, hour, hourMin, ...rest} = state;
 
         expect(min).toBe(min);
 
         expect(value.getHours()).toBe(min.getHours());
 
-        expect(hour).toMatchObject({
-          props: {value: nextMin.getHours()},
-          min: nextMin.getHours(),
-        });
+        expect(hour).toBe(nextMin.getHours());
+
+        expect(hourMin).toBe(nextMin.getHours());
 
         // it should leave remaining state value unchanged
         expect(shallowIntersect(rest, instance.state)).toBe(true);
@@ -167,16 +166,15 @@ describe('<DateInputController/>', () => {
           // $ExpectError cast nullable state as any
         ): any);
 
-        const {value, max, hour, ...rest} = state;
+        const {value, max, hour, hourMax, ...rest} = state;
 
         expect(max).toBe(max);
 
         expect(value.getHours()).toBe(max.getHours());
 
-        expect(hour).toMatchObject({
-          props: {value: nextMax.getHours()},
-          max: nextMax.getHours(),
-        });
+        expect(hour).toBe(nextMax.getHours());
+
+        expect(hourMax).toBe(nextMax.getHours());
 
         // it should leave remaining state value unchanged
         expect(shallowIntersect(rest, instance.state)).toBe(true);
@@ -193,16 +191,25 @@ describe('<DateInputController/>', () => {
           // $ExpectError cast nullable state as any
         ): any);
 
-        const {max, year, month, day, hour, minute, second, ...rest} = state;
+        const {
+          max,
+          yearMax,
+          monthMax,
+          dayMax,
+          hourMax,
+          minuteMax,
+          secondMax,
+          ...rest
+        } = state;
 
         expect(max).toBe(date);
 
-        expect(year).toMatchObject({max: max.getFullYear()});
-        expect(month).toMatchObject({max: max.getMonth()});
-        expect(day).toMatchObject({max: max.getDate()});
-        expect(hour).toMatchObject({max: max.getHours()});
-        expect(minute).toMatchObject({max: max.getMinutes()});
-        expect(second).toMatchObject({max: max.getSeconds()});
+        expect(yearMax).toBe(max.getFullYear());
+        expect(monthMax).toBe(max.getMonth());
+        expect(dayMax).toBe(max.getDate());
+        expect(hourMax).toBe(max.getHours());
+        expect(minuteMax).toBe(max.getMinutes());
+        expect(secondMax).toBe(max.getSeconds());
 
         // it should leave remaining state value unchanged
         expect(shallowIntersect(rest, instance.state)).toBe(true);
@@ -223,6 +230,11 @@ describe('<DateInputController/>', () => {
           // $ExpectError call setField with invalid argument
           instance.setFields({year: 'foo'});
         }).toThrow('Expected int year. Received foo.');
+
+        expect(() => {
+          // $ExpectError call setField with invalid argument
+          instance.setFields({year: 3.4});
+        }).toThrow('Expected int year. Received 3.4.');
       });
 
       it('should not modify state with if change is idempotent', () => {
@@ -240,14 +252,22 @@ describe('<DateInputController/>', () => {
 
         const {value, year, day, ...rest} = instance.state;
 
-        expect(year).toMatchObject({props: {value: 1986}});
-        expect(day).toMatchObject({props: {value: 12}});
+        expect(year).toBe(1986);
+        expect(day).toBe(12);
 
         // it should update state date instance
         expect(value.getTime()).toBe(new Date(1986, 0, 12, 10, 0, 0).getTime());
 
         // it should leave remaining state value unchanged
         expect(shallowIntersect(rest, previousState)).toBe(true);
+      });
+
+      it('should accept string values', () => {
+        instance.setFields({year: '1986'});
+
+        const {year} = instance.state;
+
+        expect(year).toBe(1986);
       });
 
       it('should call onChange handler with updated date', () => {

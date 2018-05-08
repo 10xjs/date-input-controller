@@ -13,24 +13,19 @@ const range = (start, end) => {
 }
 
 const DateInput = ({value, min, max, onChange}) => (
-  <DateInputController
-    value={value}
-    min={min}
-    max={max}
-    onChange={onChange}
-  >
-    {({year, month, day, hour, minute, second}) => (
+  <DateInputController value={value} min={min} max={max} onChange={onChange}>
+    {(props) => (
       <div>
         year{" "}
-        <select {...year.props}>
-          {range(year.min, year.max).map((value) => (
+        <select value={props.year} onChange={(e) => props.setYear(e.target.value)}>
+          {range(props.yearMin, props.yearMax).map((value) => (
             <option key={value} value={value}>{value}</option>
           ))}
         </select>{" "}
 
         month{" "}
-        <select {...month.props}>
-          {range(month.min, month.max).map((value) => (
+        <select value={props.month} onChange={(e) => props.setMonth(e.target.value)}>
+          {range(props.monthMin, props.monthMax).map((value) => (
             <option key={value} value={value}>
               {new Date(1970, value, 1).toLocaleString(
                 'en-US',
@@ -41,8 +36,8 @@ const DateInput = ({value, min, max, onChange}) => (
         </select>{" "}
 
         day{" "}
-        <select {...day.props}>
-          {range(day.min, day.max).map((value) => (
+        <select value={props.day} onChange={(e) => props.setDay(e.target.value)}>
+          {range(props.dayMin, props.dayMax).map((value) => (
             <option key={value} value={value}>{value}</option>
           ))}
         </select>{" "}
@@ -50,24 +45,24 @@ const DateInput = ({value, min, max, onChange}) => (
         <br/>
 
         time{" "}
-        <select {...hour.props}>
-          {range(hour.min, hour.max).map((value) => (
+        <select value={props.hour} onChange={(e) => props.setHour(e.target.value)}>
+          {range(props.hourMin, props.hourMax).map((value) => (
             <option key={value} value={value}>
               {value.toLocaleString('en-US', {minimumIntegerDigits: 2})}
             </option>
           ))}
         </select>
         :
-        <select {...minute.props}>
-          {range(minute.min, minute.max).map((value) => (
+        <select value={props.minute} onChange={(e) => props.props.setMinute(e.props.target.value)}>
+          {range(props.minuteMin, props.minuteMax).map((value) => (
             <option key={value} value={value}>
               {value.toLocaleString('en-US', {minimumIntegerDigits: 2})}
             </option>
           ))}
         </select>
         :
-        <select {...second.props}>
-          {range(second.min, second.max).map((value) => (
+        <select value={props.second} onChange={(e) => props.setSecond(e.target.value)}>
+          {range(props.secondMin, props.secondMax).map((value) => (
             <option key={value} value={value}>
               {value.toLocaleString('en-US', {minimumIntegerDigits: 2})}
             </option>

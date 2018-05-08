@@ -3,54 +3,19 @@
 import type DateInputController from '../src/DateInputController';
 
 import {
-  isInt,
   daysInMonth,
   areEqualDates,
   getDateField,
-  getValue,
+  getInitialState,
   dateValue,
   getMin,
   getMax,
   updateField,
-  createIsEvent,
-  createCastEvent,
-  createParseEvent,
-  createGetInitialState,
 } from '../src/util';
 
 const withDate = (date: Date, cb: (Date) => void) => {
   return describe(`with date: ${date.getTime()}`, () => cb(date));
 };
-
-class MockHTMLElement {
-  value: string | void;
-  checked: boolean | void;
-  type: string | void;
-
-  constructor(config: {value?: string, checked?: boolean, type?: string} = {}) {
-    this.value = config.value;
-    this.checked = config.checked;
-    this.type = config.type;
-  }
-}
-
-class MockEvent {
-  defaultPrevented: boolean;
-  target: mixed;
-
-  constructor(target: mixed) {
-    this.defaultPrevented = false;
-    this.target = target;
-  }
-  preventDefault() {
-    this.defaultPrevented = true;
-  }
-}
-
-const isEvent = createIsEvent(MockEvent);
-const castEvent = createCastEvent(MockEvent);
-const parseEvent = createParseEvent(MockEvent, MockHTMLElement);
-const getInitialState = createGetInitialState(MockEvent, MockHTMLElement);
 
 const getInstance = ({
   // Use the current to get additional coverage each time the tests are run.
@@ -90,106 +55,74 @@ describe('utils', () => {
       });
 
       it('should assign the correct field values', () => {
-        expect(instance.state.year).toMatchObject({
-          props: {value: 1984},
-          min: null,
-          max: null,
-        });
-        expect(instance.state.month).toMatchObject({
-          props: {value: 0},
-          min: 0,
-          max: 11,
-        });
-        expect(instance.state.day).toMatchObject({
-          props: {value: 24},
-          min: 1,
-          max: 31,
-        });
-        expect(instance.state.hour).toMatchObject({
-          props: {value: 10},
-          min: 0,
-          max: 23,
-        });
-        expect(instance.state.minute).toMatchObject({
-          props: {value: 0},
-          min: 0,
-          max: 59,
-        });
-        expect(instance.state.second).toMatchObject({
-          props: {value: 0},
-          min: 0,
-          max: 59,
+        expect(instance.state).toMatchObject({
+          year: 1984,
+          yearMin: null,
+          yearMax: null,
+
+          month: 0,
+          monthMin: 0,
+          monthMax: 11,
+
+          day: 24,
+          dayMin: 1,
+          dayMax: 31,
+
+          hour: 10,
+          hourMin: 0,
+          hourMax: 23,
+
+          minute: 0,
+          minuteMin: 0,
+          minuteMax: 59,
+
+          second: 0,
+          secondMin: 0,
+          secondMax: 59,
         });
       });
 
       it('should assign year methods', () => {
-        instance.state.year.props.onChange(0);
         instance.setYear(1);
 
-        expect(instance.setFields.mock.calls).toHaveLength(2);
-        expect(instance.setFields.mock.calls[0][0]).toEqual({year: 0});
-        expect(instance.setFields.mock.calls[1][0]).toEqual({year: 1});
+        expect(instance.setFields.mock.calls).toHaveLength(1);
+        expect(instance.setFields.mock.calls[0][0]).toEqual({year: 1});
       });
 
       it('should assign month methods', () => {
-        instance.state.month.props.onChange(0);
         instance.setMonth(1);
 
-        expect(instance.setFields.mock.calls).toHaveLength(2);
-        expect(instance.setFields.mock.calls[0][0]).toEqual({month: 0});
-        expect(instance.setFields.mock.calls[1][0]).toEqual({month: 1});
+        expect(instance.setFields.mock.calls).toHaveLength(1);
+        expect(instance.setFields.mock.calls[0][0]).toEqual({month: 1});
       });
 
       it('should assign day methods', () => {
-        instance.state.day.props.onChange(0);
         instance.setDay(1);
 
-        expect(instance.setFields.mock.calls).toHaveLength(2);
-        expect(instance.setFields.mock.calls[0][0]).toEqual({day: 0});
-        expect(instance.setFields.mock.calls[1][0]).toEqual({day: 1});
+        expect(instance.setFields.mock.calls).toHaveLength(1);
+        expect(instance.setFields.mock.calls[0][0]).toEqual({day: 1});
       });
 
       it('should assign hour methods', () => {
-        instance.state.hour.props.onChange(0);
         instance.setHour(1);
 
-        expect(instance.setFields.mock.calls).toHaveLength(2);
-        expect(instance.setFields.mock.calls[0][0]).toEqual({hour: 0});
-        expect(instance.setFields.mock.calls[1][0]).toEqual({hour: 1});
+        expect(instance.setFields.mock.calls).toHaveLength(1);
+        expect(instance.setFields.mock.calls[0][0]).toEqual({hour: 1});
       });
 
       it('should assign minute methods', () => {
-        instance.state.minute.props.onChange(0);
         instance.setMinute(1);
 
-        expect(instance.setFields.mock.calls).toHaveLength(2);
-        expect(instance.setFields.mock.calls[0][0]).toEqual({minute: 0});
-        expect(instance.setFields.mock.calls[1][0]).toEqual({minute: 1});
+        expect(instance.setFields.mock.calls).toHaveLength(1);
+        expect(instance.setFields.mock.calls[0][0]).toEqual({minute: 1});
       });
 
       it('should assign second methods', () => {
-        instance.state.second.props.onChange(0);
         instance.setSecond(1);
 
-        expect(instance.setFields.mock.calls).toHaveLength(2);
-        expect(instance.setFields.mock.calls[0][0]).toEqual({second: 0});
-        expect(instance.setFields.mock.calls[1][0]).toEqual({second: 1});
+        expect(instance.setFields.mock.calls).toHaveLength(1);
+        expect(instance.setFields.mock.calls[0][0]).toEqual({second: 1});
       });
-    });
-  });
-
-  describe('isInt', () => {
-    it('should check if value is an integer', () => {
-      expect(isInt(0)).toBe(true);
-      expect(isInt(-1)).toBe(true);
-      expect(isInt(1)).toBe(true);
-      expect(isInt(1.0)).toBe(true);
-
-      expect(isInt(0.5)).toBe(false);
-      expect(isInt(null)).toBe(false);
-      expect(isInt(false)).toBe(false);
-      expect(isInt(undefined)).toBe(false);
-      expect(isInt(NaN)).toBe(false);
     });
   });
 
@@ -246,25 +179,6 @@ describe('utils', () => {
     });
   });
 
-  describe('getValue', () => {
-    withDate(new Date(), (date) => {
-      let state;
-
-      beforeEach(() => {
-        state = getState({value: date});
-      });
-
-      it('should extract the correct value from state', () => {
-        expect(getValue(state, 0)).toEqual(state.year.props.value);
-        expect(getValue(state, 1)).toEqual(state.month.props.value);
-        expect(getValue(state, 2)).toEqual(state.day.props.value);
-        expect(getValue(state, 3)).toEqual(state.hour.props.value);
-        expect(getValue(state, 4)).toEqual(state.minute.props.value);
-        expect(getValue(state, 5)).toEqual(state.second.props.value);
-      });
-    });
-  });
-
   describe('dateValue', () => {
     withDate(new Date(), (date) => {
       let state;
@@ -276,12 +190,12 @@ describe('utils', () => {
       it('should return a Date representation of the state', () => {
         expect(dateValue(state).getTime()).toEqual(
           new Date(
-            state.year.props.value,
-            state.month.props.value,
-            state.day.props.value,
-            state.hour.props.value,
-            state.minute.props.value,
-            state.second.props.value,
+            state.year,
+            state.month,
+            state.day,
+            state.hour,
+            state.minute,
+            state.second,
           ).getTime(),
         );
       });
@@ -291,12 +205,12 @@ describe('utils', () => {
 
         expect(dateValue(state).getTime()).toEqual(
           Date.UTC(
-            state.year.props.value,
-            state.month.props.value,
-            state.day.props.value,
-            state.hour.props.value,
-            state.minute.props.value,
-            state.second.props.value,
+            state.year,
+            state.month,
+            state.day,
+            state.hour,
+            state.minute,
+            state.second,
           ),
         );
       });
@@ -600,86 +514,41 @@ describe('utils', () => {
     });
 
     it('should change the value of a field', () => {
-      expect(updateField(0, 1992)(state).year.props.value).toBe(1992);
-      expect(updateField(2, 13)(state).day.props.value).toBe(13);
-      expect(updateField(4, 13)(state).minute.props.value).toBe(13);
+      expect(updateField(0, 1992)(state).year).toBe(1992);
+      expect(updateField(2, 13)(state).day).toBe(13);
+      expect(updateField(4, 13)(state).minute).toBe(13);
     });
 
     it('should clamp to min value', () => {
       state = updateField(0, 1987)(state);
-      state = updateField(1, state.month.props.value)(state);
-      state = updateField(2, state.day.props.value)(state);
-      state = updateField(3, state.hour.props.value)(state);
-      state = updateField(4, state.minute.props.value)(state);
-      state = updateField(5, state.second.props.value)(state);
+      state = updateField(1, state.month)(state);
+      state = updateField(2, state.day)(state);
+      state = updateField(3, state.hour)(state);
+      state = updateField(4, state.minute)(state);
+      state = updateField(5, state.second)(state);
 
-      expect(state.year.props.value).toBe(1990);
-      expect(state.month.props.value).toBe(8);
-      expect(state.day.props.value).toBe(30);
-      expect(state.hour.props.value).toBe(18);
-      expect(state.minute.props.value).toBe(40);
-      expect(state.second.props.value).toBe(40);
+      expect(state.year).toBe(1990);
+      expect(state.month).toBe(8);
+      expect(state.day).toBe(30);
+      expect(state.hour).toBe(18);
+      expect(state.minute).toBe(40);
+      expect(state.second).toBe(40);
     });
 
     it('should clamp to max value', () => {
       state = updateField(0, 1999)(state);
-      state = updateField(1, state.month.props.value)(state);
-      state = updateField(2, state.day.props.value)(state);
-      state = updateField(3, state.hour.props.value)(state);
-      state = updateField(4, state.minute.props.value)(state);
-      state = updateField(5, state.second.props.value)(state);
+      state = updateField(1, state.month)(state);
+      state = updateField(2, state.day)(state);
+      state = updateField(3, state.hour)(state);
+      state = updateField(4, state.minute)(state);
+      state = updateField(5, state.second)(state);
 
-      expect(state.year.props.value).toBe(1996);
-      expect(state.month.props.value).toBe(4);
-      expect(state.day.props.value).toBe(10);
-      expect(state.hour.props.value).toBe(6);
-      expect(state.minute.props.value).toBe(20);
-      expect(state.second.props.value).toBe(20);
-    });
-  });
-
-  describe('isEvent', () => {
-    it('should return true if the value is an Event or SyntheticEvent', () => {
-      expect(isEvent(new MockEvent())).toEqual(true);
-      expect(isEvent(new class SyntheticEvent {}())).toEqual(true);
-      expect(isEvent(new class SyntheticAnimationEvent {}())).toEqual(true);
-      expect(isEvent(new class SyntheticCompositionEvent {}())).toEqual(true);
-      expect(isEvent(new class SyntheticInputEvent {}())).toEqual(true);
-      expect(isEvent(new class SyntheticUIEvent {}())).toEqual(true);
-      expect(isEvent(new class SyntheticFocusEvent {}())).toEqual(true);
-      expect(isEvent(new class SyntheticKeyboardEvent {}())).toEqual(true);
-      expect(isEvent(new class SyntheticMouseEvent {}())).toEqual(true);
-      expect(isEvent(new class SyntheticDragEvent {}())).toEqual(true);
-      expect(isEvent(new class SyntheticWheelEvent {}())).toEqual(true);
-      expect(isEvent(new class SyntheticTouchEvent {}())).toEqual(true);
-      expect(isEvent(new class SyntheticTransitionEvent {}())).toEqual(true);
-
-      expect(isEvent(new class SomeInvalidEvent {}())).toEqual(false);
-      expect(isEvent({constructor: null})).toEqual(false);
-      expect(isEvent(null)).toEqual(false);
-    });
-  });
-
-  describe('castEvent', () => {
-    expect(castEvent(new MockEvent()) instanceof MockEvent).toEqual(true);
-    expect(castEvent(new class SomeInvalidEvent {}())).toEqual(null);
-  });
-
-  describe('parseEvent', () => {
-    it('should return non Event instances', () => {
-      expect(parseEvent(null)).toEqual(null);
-    });
-
-    it('should return the value of a plain event target', () => {
-      const event = new MockEvent(new MockHTMLElement({value: 'foo'}));
-
-      expect(parseEvent(event)).toEqual('foo');
-    });
-
-    it('should return `undefined` with an invalid event target', () => {
-      const event = new MockEvent({value: 'foo'});
-
-      expect(parseEvent(event)).toEqual(undefined);
+      expect(state.year).toBe(1996);
+      expect(state.month).toBe(4);
+      expect(state.day).toBe(10);
+      expect(state.hour).toBe(6);
+      expect(state.minute).toBe(20);
+      expect(state.second).toBe(20);
     });
   });
 });

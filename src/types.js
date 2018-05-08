@@ -2,53 +2,52 @@
 
 import * as React from 'react';
 
-export type FieldState<T> = {
-  props: {
-    value: number,
-    onChange(mixed): void,
-  },
-  min: T,
-  max: T,
-};
-
 export type Fields = {
-  year: FieldState<number | null>,
-  month: FieldState<number>,
-  day: FieldState<number>,
-  hour: FieldState<number>,
-  minute: FieldState<number>,
-  second: FieldState<number>,
+  year: number,
+  yearMin: number | null,
+  yearMax: number | null,
+  month: number,
+  monthMin: number,
+  monthMax: number,
+  day: number,
+  dayMin: number,
+  dayMax: number,
+  hour: number,
+  hourMin: number,
+  hourMax: number,
+  minute: number,
+  minuteMin: number,
+  minuteMax: number,
+  second: number,
+  secondMin: number,
+  secondMax: number,
 };
 
-export type FieldsState = {
+export type FieldActions = {
+  setYear(year: number | string): void,
+  setMonth(month: number | string): void,
+  setDay(day: number | string): void,
+  setHour(hour: number | string): void,
+  setMinute(minute: number | string): void,
+  setSecond(second: number | string): void,
+};
+
+export type State = {
   value: Date,
   min?: Date,
   max?: Date,
   utc: boolean,
-  ...$Exact<Fields>,
-};
-
-export type FieldActions = {
-  setYear(year: number): void,
-  setMonth(month: number): void,
-  setDay(day: number): void,
-  setHour(hour: number): void,
-  setMinute(minute: number): void,
-  setSecond(second: number): void,
-};
-
-export type State = {
-  ...$Exact<FieldsState>,
 
   setFields(fields: {
-    year?: number,
-    month?: number,
-    day?: number,
-    hour?: number,
-    minute?: number,
-    second?: number,
+    year?: number | string,
+    month?: number | string,
+    day?: number | string,
+    hour?: number | string,
+    minute?: number | string,
+    second?: number | string,
   }): void,
 
+  ...$Exact<Fields>,
   ...$Exact<FieldActions>,
 };
 
