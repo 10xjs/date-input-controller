@@ -53,7 +53,7 @@ const DateInput = ({value, min, max, onChange}) => (
           ))}
         </select>
         :
-        <select value={props.minute} onChange={(e) => props.props.setMinute(e.props.target.value)}>
+        <select value={props.minute} onChange={(e) => props.setMinute(e.props.target.value)}>
           {range(props.minuteMin, props.minuteMax).map((value) => (
             <option key={value} value={value}>
               {value.toLocaleString('en-US', {minimumIntegerDigits: 2})}
