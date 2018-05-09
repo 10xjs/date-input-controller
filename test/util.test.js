@@ -46,12 +46,19 @@ const getInstance = ({
 const getState = (props) => getInstance(props).state;
 
 describe('utils', () => {
-  describe('assignFieldState', () => {
+  describe('getInitialState', () => {
     withDate(new Date(1984, 0, 24, 10, 0, 0), (date) => {
       let instance;
 
       beforeEach(() => {
         instance = getInstance({value: date});
+      });
+
+      it('should use a constant fallback if value is undefined', () => {
+        expect(
+          // $ExpectError Intentionally omit value prop
+          getInitialState({props: {value: undefined}}).state.value.getTime(),
+        ).toBe(0);
       });
 
       it('should assign the correct field values', () => {
