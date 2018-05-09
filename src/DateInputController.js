@@ -48,12 +48,12 @@ class DateInputController extends React.PureComponent<Props, State> {
   }
 
   setFields(fields: {
-    year?: number,
-    month?: number,
-    day?: number,
-    hour?: number,
-    minute?: number,
-    second?: number,
+    year?: number | string,
+    month?: number | string,
+    day?: number | string,
+    hour?: number | string,
+    minute?: number | string,
+    second?: number | string,
   }) {
     this._updateState((state) => {
       const updaters = [];

@@ -227,12 +227,10 @@ describe('<DateInputController/>', () => {
 
       it('should throw if called with invalid value', () => {
         expect(() => {
-          // $ExpectError call setField with invalid argument
           instance.setFields({year: 'foo'});
         }).toThrow('Expected int year. Received foo.');
 
         expect(() => {
-          // $ExpectError call setField with invalid argument
           instance.setFields({year: 3.4});
         }).toThrow('Expected int year. Received 3.4.');
       });
