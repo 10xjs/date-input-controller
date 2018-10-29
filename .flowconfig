@@ -1,5 +1,5 @@
 [version]
-0.71.0
+0.84.0
 
 [include]
 <PROJECT_ROOT>/**/node_modules

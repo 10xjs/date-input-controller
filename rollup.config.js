@@ -11,5 +11,5 @@ export default {
       exclude: 'node_modules/**',
     }),
   ],
-  external: ['es6-error', 'react', 'hoist-non-react-statics'],
+  external: ['react'],
 };

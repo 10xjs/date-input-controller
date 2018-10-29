@@ -40,7 +40,7 @@ export const fieldKeys = ['year', 'month', 'day', 'hour', 'minute', 'second'];
 
 export const dateValue = (state: State): Date => {
   const args = fieldKeys.map((_, i) => state[fieldKeys[i]]);
-  if (state.utc) {
+  if (state.props.utc) {
     return new Date(Date.UTC.apply(null, args));
   }
   // $ExpectError Flow doesn't like us touching Date.bind
@@ -53,11 +53,11 @@ const atMin = (state: State, index: number) => {
     return true;
   }
 
-  const min = state.min;
+  const min = state.props.min;
   return (
     min &&
     ((index === 0 ? true : atMin(state, index - 1)) &&
-      getDateField[index](min, state.utc) >= state[fieldKeys[index]])
+      getDateField[index](min, state.props.utc) >= state[fieldKeys[index]])
   );
 };
 
@@ -66,11 +66,11 @@ const atMax = (state: State, index: number) => {
     return true;
   }
 
-  const max = state.max;
+  const max = state.props.max;
   return (
     max &&
     ((index === 0 ? true : atMax(state, index - 1)) &&
-      getDateField[index](max, state.utc) <= state[fieldKeys[index]])
+      getDateField[index](max, state.props.utc) <= state[fieldKeys[index]])
   );
 };
 
@@ -84,21 +84,21 @@ const resolveDefaultMax = (state: State, index: number) => {
 };
 
 export const getMin = (state: State, index: number) => {
-  const min = state.min;
+  const min = state.props.min;
   // If min date is defined and the next-largest field is at its min value...
   return min && atMin(state, index - 1)
     ? // return the value of the min date at the current field...
-      getDateField[index](min, state.utc)
+      getDateField[index](min, state.props.utc)
     : // or return a default min value for the field.
       defaultMin[index];
 };
 
 export const getMax = (state: State, index: number) => {
-  const max = state.max;
+  const max = state.props.max;
   // If max date is defined and the next-largest field is at its max value...
   return max && atMax(state, index - 1)
     ? // return the value of the max date at the current field...
-      getDateField[index](max, state.utc)
+      getDateField[index](max, state.props.utc)
     : // or return a default max value for the field.
       resolveDefaultMax(state, index);
 };
@@ -144,16 +144,18 @@ export const getInitialState = (
 ): {state: State, actions: FieldActions} => {
   const updaters = [];
 
+  const {value = new Date(0), min, max, utc} = target.props;
+
   const actions: $Shape<FieldActions> = {};
   let state: $Shape<State> = {
-    value: target.props.value === undefined ? new Date(0) : target.props.value,
-    min: target.props.min,
-    max: target.props.max,
-    utc: target.props.utc,
+    value,
+    props: {value, min, max, utc},
   };
 
   fieldKeys.forEach((field, i) => {
-    updaters.push(updateField(i, getDateField[i](state.value, state.utc)));
+    updaters.push(
+      updateField(i, getDateField[i](state.value, state.props.utc)),
+    );
 
     const setter = (value) => {
       const fields = {};

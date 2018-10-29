@@ -1,9 +1,6 @@
 extends:
   - metalab
   - metalab/react
-rules:
-  complexity: 0
-  max-len: 0
 overrides:
   -
     files: "*.test.js"
