@@ -208,7 +208,7 @@ describe('utils', () => {
       });
 
       it('should return a Date representation of the state in UTC', () => {
-        state.utc = true;
+        state.props.utc = true;
 
         expect(dateValue(state).getTime()).toEqual(
           Date.UTC(

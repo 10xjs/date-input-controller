@@ -98,29 +98,22 @@ DateInputController.defaultProps = {
 };
 
 DateInputController.getDerivedStateFromProps = (props: Props, state: State) => {
-  const newValue = !areEqualDates(state.value, props.value);
-  const newMin = !areEqualDates(state.min, props.min);
-  const newMax = !areEqualDates(state.max, props.max);
-  const newUTC = state.utc !== props.utc;
+  const {value = new Date(0), min, max, utc} = props;
+
+  const newValue = !areEqualDates(state.props.value, value);
+  const newMin = !areEqualDates(state.props.min, min);
+  const newMax = !areEqualDates(state.props.max, max);
+  const newUTC = state.props.utc !== utc;
 
   // Check if any of the props that can affect state have changed.
   if (!newValue && !newMin && !newMax && !newUTC) {
     return null;
   }
 
-  let nextState = Object.assign({}, state);
-  nextState.utc = props.utc;
-
-  if (newMin) {
-    nextState.min = props.min;
-  }
-
-  if (newMax) {
-    nextState.max = props.max;
-  }
+  let nextState = Object.assign({}, state, {props: {value, min, max, utc}});
 
   const updaters = fieldKeys.map((_, i) =>
-    updateField(i, getDateField[i](props.value, props.utc)),
+    updateField(i, getDateField[i](newValue ? value : state.value, utc)),
   );
 
   // Calculate a new state from the incoming props.

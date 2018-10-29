@@ -79,6 +79,19 @@ describe('<DateInputController/>', () => {
         expect(state).toEqual(null);
       });
 
+      it('should default undefined value to date with value 0', () => {
+        const instance = getInstance({value: date});
+
+        const nextProps = {...instance.props, value: undefined};
+
+        const state = DateInputController.getDerivedStateFromProps(
+          nextProps,
+          instance.state,
+        );
+
+        expect(state.props.value.getTime()).toEqual(new Date(0).getTime());
+      });
+
       it('should return updated state if value prop has changed', () => {
         const instance = getInstance({value: date});
 
@@ -99,7 +112,7 @@ describe('<DateInputController/>', () => {
           // $ExpectError cast nullable state as any
         ): any);
 
-        const {value, day, second, ...rest} = state;
+        const {value, day, second, props: _props, ...rest} = state;
 
         expect(day).toEqual(nextDate.getDate());
 
@@ -132,11 +145,9 @@ describe('<DateInputController/>', () => {
           // $ExpectError cast nullable state as any
         ): any);
 
-        const {value, min, hour, hourMin, ...rest} = state;
+        const {value, hour, hourMin, props, ...rest} = state;
 
-        expect(min).toBe(min);
-
-        expect(value.getHours()).toBe(min.getHours());
+        expect(value.getHours()).toBe(props.min.getHours());
 
         expect(hour).toBe(nextMin.getHours());
 
@@ -166,11 +177,9 @@ describe('<DateInputController/>', () => {
           // $ExpectError cast nullable state as any
         ): any);
 
-        const {value, max, hour, hourMax, ...rest} = state;
+        const {value, hour, hourMax, props, ...rest} = state;
 
-        expect(max).toBe(max);
-
-        expect(value.getHours()).toBe(max.getHours());
+        expect(value.getHours()).toBe(props.max.getHours());
 
         expect(hour).toBe(nextMax.getHours());
 
@@ -192,27 +201,41 @@ describe('<DateInputController/>', () => {
         ): any);
 
         const {
-          max,
           yearMax,
           monthMax,
           dayMax,
           hourMax,
           minuteMax,
           secondMax,
+          props,
           ...rest
         } = state;
 
-        expect(max).toBe(date);
+        expect(props.max).toBe(date);
 
-        expect(yearMax).toBe(max.getFullYear());
-        expect(monthMax).toBe(max.getMonth());
-        expect(dayMax).toBe(max.getDate());
-        expect(hourMax).toBe(max.getHours());
-        expect(minuteMax).toBe(max.getMinutes());
-        expect(secondMax).toBe(max.getSeconds());
+        expect(yearMax).toBe(props.max.getFullYear());
+        expect(monthMax).toBe(props.max.getMonth());
+        expect(dayMax).toBe(props.max.getDate());
+        expect(hourMax).toBe(props.max.getHours());
+        expect(minuteMax).toBe(props.max.getMinutes());
+        expect(secondMax).toBe(props.max.getSeconds());
 
         // it should leave remaining state value unchanged
         expect(shallowIntersect(rest, instance.state)).toBe(true);
+      });
+
+      it('should not overwrite state change with props', () => {
+        const instance = getInstance({value: date});
+
+        // Update internal state.
+        instance.setFields({year: date.getFullYear() + 1});
+
+        const state = DateInputController.getDerivedStateFromProps(
+          instance.props,
+          instance.state,
+        );
+
+        expect(state).toEqual(null);
       });
     });
   });

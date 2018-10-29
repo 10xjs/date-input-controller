@@ -33,10 +33,13 @@ export type FieldActions = {
 };
 
 export type State = {
+  props: {
+    value: Date,
+    min?: Date,
+    max?: Date,
+    utc: boolean,
+  },
   value: Date,
-  min?: Date,
-  max?: Date,
-  utc: boolean,
 
   setFields(fields: {
     year?: number | string,
