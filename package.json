@@ -46,7 +46,7 @@
     "flow-bin": "0.84.0",
     "jest": "23.6.0",
     "ncp": "2.0.0",
-    "prettier": "1.14.3",
+    "prettier": "1.19.1",
     "react": "16.6.0",
     "react-dom": "16.6.0",
     "renamer": "1.1.0",
