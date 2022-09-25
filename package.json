@@ -51,7 +51,7 @@
     "react-dom": "16.6.0",
     "renamer": "1.1.0",
     "rimraf": "2.6.2",
-    "rollup": "0.66.6",
+    "rollup": "2.79.1",
     "rollup-plugin-babel": "4.0.3"
   },
   "jest": {
