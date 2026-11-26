@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@babel/cli": "7.1.2",
-    "@babel/core": "7.1.2",
+    "@babel/core": "7.29.6",
     "@babel/plugin-proposal-object-rest-spread": "7.0.0",
     "@babel/plugin-syntax-class-properties": "7.0.0",
     "@babel/plugin-syntax-dynamic-import": "7.0.0",
